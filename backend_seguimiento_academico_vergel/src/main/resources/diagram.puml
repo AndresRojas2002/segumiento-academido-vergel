@@ -1,0 +1,126 @@
+@startuml
+skinparam linetype ortho
+skinparam entity {
+  BackgroundColor #E8E8FF
+  BorderColor #6060BB
+  HeaderBackgroundColor #6060BB
+  FontColor #222222
+}
+
+entity "profesor" {
+  * id : Long <<PK>>
+  --
+  * user_name : String <<UNIQUE>>
+  * password : String
+  * name : String
+  * last_name : String
+  * email : String <<UNIQUE>>
+  * address : String
+  * phone : String
+  * professor_number : String <<UNIQUE>>
+}
+
+entity "professor_roles" {
+  * professor_id : Long <<FK>>
+  --
+  * rol : String
+}
+
+entity "estudiante" {
+  * id : Long <<PK>>
+  --
+  * user_name : String <<UNIQUE>>
+  * password : String
+  * name : String
+  * last_name : String
+  * email : String <<UNIQUE>>
+  * address : String
+  * phone : String
+  * student_number : String <<UNIQUE>>
+}
+
+entity "student_roles" {
+  * student_id : Long <<FK>>
+  --
+  * rol : String
+}
+
+entity "acudiente" {
+  * id : Long <<PK>>
+  --
+  * user_name : String <<UNIQUE>>
+  * password : String
+  * name : String
+  * last_name : String
+  * email : String <<UNIQUE>>
+  * address : String
+  * phone : String
+  * parentesco : String
+  * estudiante_id : Long <<FK>>
+}
+
+entity "acudiente_roles" {
+  * acudiente_id : Long <<FK>>
+  --
+  * rol : String
+}
+
+entity "grado" {
+  * id : Long <<PK>>
+  --
+  * nombre_grado : String
+  * seccion : String
+}
+
+entity "materia" {
+  * id : Long <<PK>>
+  --
+  * nombre : String
+  * descripcion : String
+  * profesor_id : Long <<FK>>
+  * grado_id : Long <<FK>>
+}
+
+entity "enrollments_state" {
+  * id : Long <<PK>>
+  --
+  * state : String
+}
+note right of enrollments_state
+  Valores posibles:
+  ACTIVE — Matrícula activa
+  RETIRED — Matrícula retirada
+end note
+
+entity "matricula" {
+  * id : Long <<PK>>
+  --
+  * estudiante_id : Long <<FK>>
+  * grado_id : Long <<FK>>
+  * anio_academico : Integer
+  * fecha_registro : Date
+  * estado_matricula_id : Long <<FK>>
+}
+
+entity "notas" {
+  * id : Long <<PK>>
+  --
+  * matricula_id : Long <<FK>>
+  * materia_id : Long <<FK>>
+  * valor : String
+}
+
+' Relaciones
+profesor            ||--o{ professor_roles   : "tiene"
+estudiante          ||--o{ student_roles     : "tiene"
+acudiente           ||--o{ acudiente_roles   : "tiene"
+estudiante          ||--o{ acudiente         : "es acudiente de"
+estudiante          ||--o{ matricula         : "tiene"
+grado               ||--o{ matricula         : "recibe"
+grado               ||--o{ materia           : "posee"
+profesor            ||--o{ materia           : "dicta"
+enrollments_state   ||--o{ matricula         : "define estado"
+matricula           ||--o{ notas             : "genera"
+materia             ||--o{ notas             : "evaluada en"
+
+@enduml

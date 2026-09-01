@@ -1,0 +1,36 @@
+<section class="login-view">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">EV</div>
+      <h1>Seguimiento Académico<br /><span>y Alertas Tempranas</span></h1>
+      <p class="login-sub">IE Uribe Gaviria · Sede El Vergel</p>
+    </div>
+
+    <form class="form" (ngSubmit)="login()">
+      <label>Usuario <input type="text" name="u" [(ngModel)]="userName" required /></label>
+      <label>Contraseña <input type="password" name="p" [(ngModel)]="password" required /></label>
+      <button type="submit" class="btn btn-primary btn-block" [disabled]="loading()">
+        {{ loading() ? 'Ingresando…' : 'Ingresar' }}
+      </button>
+    </form>
+
+    <button class="link-btn" (click)="showReg.set(!showReg())">¿Primera vez? Crear un docente</button>
+
+    @if (showReg()) {
+      <form class="form" (ngSubmit)="register()">
+        <p class="form-hint">Registra el docente que administrará el sistema.</p>
+        <div class="grid-2">
+          <label>Nombre <input name="rn" [(ngModel)]="reg.name" required /></label>
+          <label>Apellido <input name="rl" [(ngModel)]="reg.lastName" required /></label>
+          <label>Usuario <input name="ru" [(ngModel)]="reg.userName" required /></label>
+          <label>Contraseña (mín. 8) <input type="password" name="rp" [(ngModel)]="reg.password" minlength="8" required /></label>
+          <label>Correo <input type="email" name="re" [(ngModel)]="reg.email" required /></label>
+          <label>N.º identificación <input name="ri" [(ngModel)]="reg.professorNumber" required /></label>
+          <label>Teléfono <input name="rph" [(ngModel)]="reg.phone" /></label>
+          <label>Dirección <input name="ra" [(ngModel)]="reg.address" /></label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Crear docente</button>
+      </form>
+    }
+  </div>
+</section>

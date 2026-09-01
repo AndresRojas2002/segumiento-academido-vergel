@@ -1,0 +1,83 @@
+<div class="topbar"><h1>Materias</h1><p>Gestión de materias</p></div>
+
+<div class="opts">
+  <button class="opt" [class.active]="vista()==='listar'" (click)="setView('listar')">☰ Listar todo</button>
+  <button class="opt" [class.active]="vista()==='crear'" (click)="setView('crear')">＋ Crear</button>
+  <button class="opt" [class.active]="vista()==='buscarId'" (click)="setView('buscarId')">🔍 Por ID</button>
+  <button class="opt" [class.active]="vista()==='buscarNombre'" (click)="setView('buscarNombre')">🔎 Por nombre</button>
+  <button class="opt" [class.active]="vista()==='actualizar'" (click)="setView('actualizar')">✎ Actualizar</button>
+</div>
+
+<div class="content">
+@if (vista() === 'listar') {
+  <div class="title">Listado de materias</div>
+  @if (loading()) { <p class="empty">Cargando…</p> }
+  @else if (error()) { <p class="empty">Error al cargar. <button class="btn btn-ghost btn-sm" (click)="cargar()">Reintentar</button></p> }
+  @else if (items().length === 0) { <p class="empty">No hay registros. Crea el primero con “Crear”.</p> }
+  @else {
+    <div class="card tabla"><table><thead><tr><th>ID</th><th>Materia</th><th>Descripción</th><th>Acciones</th></tr></thead>
+      <tbody>@for (item of items(); track item.id) {
+        <tr><td>{{ item.id }}</td><td>{{ tr(item.nameSubject) }}</td><td>{{ tr(item.description) }}</td><td><div class="acc"><button class="mini edit" (click)="editarDesdeLista(item.id)">Editar</button><button class="mini del" (click)="borrar(item.id)">Borrar</button></div></td></tr>
+      }</tbody></table></div>
+  }
+}
+
+@if (vista() === 'crear') {
+  <div class="title">Nuevo registro</div>
+  <form class="form card" [formGroup]="form" (ngSubmit)="crear()">
+    <div class="grid">
+        <div class="fg"><label>Nombre</label><input type="text" formControlName="nameSubject" class="form-control" /></div>
+        <div class="fg"><label>Descripción</label><input type="text" formControlName="description" class="form-control" /></div>
+        <div class="fg"><label>Docente</label><select formControlName="professorId" class="form-control"><option [ngValue]="null">Seleccione…</option>@for (o of profesors; track o.id) { <option [ngValue]="o.id">{{ o.name }} {{ o.lastName }}</option> }</select></div>
+        <div class="fg"><label>Grado</label><select formControlName="gradeId" class="form-control"><option [ngValue]="null">Seleccione…</option>@for (o of grados; track o.id) { <option [ngValue]="o.id">{{ o.nameGrade }}</option> }</select></div>
+    </div>
+    <div class="acciones"><button type="submit" class="btn btn-primary" [disabled]="form.invalid">Guardar</button>
+      <button type="button" class="btn btn-ghost" (click)="form.reset()">Limpiar</button></div>
+  </form>
+}
+
+@if (vista() === 'buscarId') {
+  <p class="hint">Escribe el ID del registro y pulsa Buscar.</p>
+  <div class="buscar"><div class="fg" style="flex:1"><label>ID</label><input [(ngModel)]="idBuscar" /></div>
+    <button class="btn btn-primary" (click)="buscarPorId()">Buscar</button></div>
+  @if (buscadoId) {
+    @if (encontrado) {
+      <div class="result-card"><div class="fila"><span class="k">ID</span><span>{{ encontrado.id }}</span></div><div class="fila"><span class="k">Materia</span><span>{{ tr(encontrado.nameSubject) }}</span></div><div class="fila"><span class="k">Descripción</span><span>{{ tr(encontrado.description) }}</span></div></div>
+    } @else { <p class="empty">No se encontró ningún registro con ese ID.</p> }
+  }
+}
+
+@if (vista() === 'buscarNombre') {
+  <p class="hint">Escribe un nombre o texto y pulsa Buscar.</p>
+  <div class="buscar"><div class="fg" style="flex:1"><label>Nombre o texto</label><input [(ngModel)]="texto" /></div>
+    <button class="btn btn-primary" (click)="buscarPorNombre()">Buscar</button></div>
+  @if (buscadoNombre) {
+    <div class="title" style="font-size:.95rem">{{ resultados.length }} resultado(s)</div>
+    @if (resultados.length) {
+      <div class="card tabla"><table><thead><tr><th>ID</th><th>Materia</th><th>Descripción</th><th>Acciones</th></tr></thead>
+        <tbody>@for (item of resultados; track item.id) {
+          <tr><td>{{ item.id }}</td><td>{{ tr(item.nameSubject) }}</td><td>{{ tr(item.description) }}</td><td><div class="acc"><button class="mini edit" (click)="editarDesdeLista(item.id)">Editar</button><button class="mini del" (click)="borrar(item.id)">Borrar</button></div></td></tr>
+        }</tbody></table></div>
+    } @else { <p class="empty">Sin coincidencias.</p> }
+  }
+}
+
+@if (vista() === 'actualizar') {
+  <p class="hint">Escribe el ID, pulsa Cargar, edita los datos y guarda.</p>
+  <div class="buscar"><div class="fg" style="flex:1"><label>ID a actualizar</label><input [(ngModel)]="idEdit" /></div>
+    <button class="btn btn-ghost" (click)="cargarParaEditar()">Cargar</button></div>
+  @if (editId) {
+    <form class="form card" [formGroup]="editForm" (ngSubmit)="actualizar()">
+      <div class="title" style="font-size:1rem">Editando registro #{{ editId }}</div>
+      <div class="grid">
+        <div class="fg"><label>Nombre</label><input type="text" formControlName="nameSubject" class="form-control" /></div>
+        <div class="fg"><label>Descripción</label><input type="text" formControlName="description" class="form-control" /></div>
+        <div class="fg"><label>Docente</label><select formControlName="professorId" class="form-control"><option [ngValue]="null">Seleccione…</option>@for (o of profesors; track o.id) { <option [ngValue]="o.id">{{ o.name }} {{ o.lastName }}</option> }</select></div>
+        <div class="fg"><label>Grado</label><select formControlName="gradeId" class="form-control"><option [ngValue]="null">Seleccione…</option>@for (o of grados; track o.id) { <option [ngValue]="o.id">{{ o.nameGrade }}</option> }</select></div>
+      </div>
+      <div class="acciones"><button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-ghost" (click)="editId = null">Cancelar</button></div>
+    </form>
+  }
+}
+</div>

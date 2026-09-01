@@ -1,0 +1,90 @@
+<div class="topbar"><h1>Alertas tempranas</h1><p>Tablero de riesgo académico</p></div>
+<div class="page">
+<div class="panel-head">
+  <div>
+    <h2>Tablero de alertas tempranas</h2>
+    <p class="muted">El motor analiza notas y asistencia y marca a los estudiantes en riesgo.</p>
+  </div>
+  <button class="btn btn-primary" (click)="evaluate()" [disabled]="evaluating()">
+    {{ evaluating() ? 'Evaluando…' : '▶ Evaluar ahora' }}
+  </button>
+</div>
+
+<div class="stats">
+  <div class="stat azul"><div class="num">{{ alerts().length }}</div><div class="lbl">Alertas totales</div></div>
+  <div class="stat rojo"><div class="num">{{ count('severity','HIGH') }}</div><div class="lbl">Gravedad alta</div></div>
+  <div class="stat ambar"><div class="num">{{ count('status','OPEN') }}</div><div class="lbl">Sin atender</div></div>
+  <div class="stat verde"><div class="num">{{ count('status','RESOLVED') }}</div><div class="lbl">Resueltas</div></div>
+</div>
+
+<div class="filters">
+  <label>Estado
+    <select [(ngModel)]="filter">
+      <option value="ALL">Todas</option>
+      <option value="OPEN">Abiertas</option>
+      <option value="IN_PROGRESS">En proceso</option>
+      <option value="RESOLVED">Resueltas</option>
+    </select>
+  </label>
+  <button class="btn btn-ghost" (click)="load()">↻ Actualizar</button>
+</div>
+
+<div class="alert-list">
+  @for (a of filtered(); track a.id) {
+    <div class="alert-card sev-{{ a.severity }}">
+      <div class="alert-top">
+        <div>
+          <div class="alert-title">{{ a.studentName }} {{ a.studentLastName }} · {{ L.type[a.type] }}</div>
+          <div class="alert-meta">
+            <span>Valor: <strong>{{ a.metricValue ?? '—' }}</strong></span>
+            <span>Generada: {{ a.generatedDate || '—' }}</span>
+            @if (a.period) { <span>Periodo: {{ a.period }}</span> }
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge sev-{{ a.severity }}">{{ L.severity[a.severity] }}</span>
+          <span class="badge st-{{ a.status }}">{{ L.status[a.status] }}</span>
+        </div>
+      </div>
+      <p class="alert-desc">{{ a.description }}</p>
+
+      <div class="alert-actions">
+        <select (change)="changeStatus(a, $any($event.target).value); $any($event.target).value=''">
+          <option value="">Cambiar estado…</option>
+          <option value="OPEN">Abierta</option>
+          <option value="IN_PROGRESS">En proceso</option>
+          <option value="RESOLVED">Resuelta</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" (click)="toggleForm(a.id)">＋ Registrar seguimiento</button>
+      </div>
+
+      @if (followups[a.id]?.length) {
+        <div class="followups">
+          <strong style="font-size:.8rem;color:var(--gris)">Seguimiento:</strong>
+          @for (f of followups[a.id]; track f.id) {
+            <div class="followup-item">
+              <div>{{ f.action }}@if (f.result) { — <em>{{ f.result }}</em> }</div>
+              <div class="fu-date">{{ f.date }}@if (f.professorName) { · {{ f.professorName }} }</div>
+            </div>
+          }
+        </div>
+      }
+
+      @if (showForm[a.id]) {
+        <form class="followup-form" (ngSubmit)="submitFollowup(a.id)">
+          <textarea rows="2" name="ac{{a.id}}" [(ngModel)]="form[a.id].action" placeholder="Acción realizada (ej: se citó al acudiente)" required></textarea>
+          <input type="text" name="re{{a.id}}" [(ngModel)]="form[a.id].result" placeholder="Resultado o compromiso (opcional)" />
+          <select name="pr{{a.id}}" [(ngModel)]="form[a.id].professorId">
+            <option [ngValue]="null">Docente (opcional)</option>
+            @for (p of professors; track p.id) { <option [ngValue]="p.id">{{ p.name }} {{ p.lastName }}</option> }
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm">Guardar seguimiento</button>
+        </form>
+      }
+    </div>
+  } @empty {
+    <p class="empty">No hay alertas para mostrar. Registra notas/asistencia y pulsa “Evaluar ahora”.</p>
+  }
+</div>
+
+</div>
